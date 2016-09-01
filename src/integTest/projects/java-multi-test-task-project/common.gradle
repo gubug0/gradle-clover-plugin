@@ -44,7 +44,7 @@ clover {
 task customTest(type: Test) {
     testClassesDir = sourceSets.customTest.output.classesDir
     classpath = sourceSets.customTest.runtimeClasspath
-    testSrcDirs = sourceSets.customTest.java.srcDirs as List
+//    clover.testSrcDirs = sourceSets.customTest.java.srcDirs as List
 }
 
 check.dependsOn customTest

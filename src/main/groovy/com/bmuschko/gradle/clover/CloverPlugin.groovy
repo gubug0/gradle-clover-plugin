@@ -128,7 +128,7 @@ class CloverPlugin implements Plugin<Project> {
         optimizeTestSetAction.conventionMapping.map('snapshotFile') { getSnapshotFile(project, cloverPluginConvention, false, testTask) }
         optimizeTestSetAction.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
         optimizeTestSetAction.conventionMapping.map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
-        optimizeTestSetAction.conventionMapping.map('testSrcDirs') { getTestSourceDirectories(project, cloverPluginConvention, testTask) }
+        optimizeTestSetAction.conventionMapping.map('testSrcDirs') { getTestSourceDirectories(project, cloverPluginConvention) }
         optimizeTestSetAction.conventionMapping.map('buildDir') { project.buildDir }
         optimizeTestSetAction
     }
@@ -148,7 +148,7 @@ class CloverPlugin implements Plugin<Project> {
         instrumentCodeAction.conventionMapping.map('classesDir') { project.sourceSets.main.output.classesDir }
         instrumentCodeAction.conventionMapping.map('testClassesDir') { testTask.testClassesDir }
         instrumentCodeAction.conventionMapping.map('srcDirs') { getSourceDirectories(project, cloverPluginConvention) }
-        instrumentCodeAction.conventionMapping.map('testSrcDirs') { getTestSourceDirectories(project, cloverPluginConvention, testTask) }
+        instrumentCodeAction.conventionMapping.map('testSrcDirs') { getTestSourceDirectories(project, cloverPluginConvention) }
         instrumentCodeAction.conventionMapping.map('sourceCompatibility') { project.sourceCompatibility?.toString() }
         instrumentCodeAction.conventionMapping.map('targetCompatibility') { project.targetCompatibility?.toString() }
         instrumentCodeAction.conventionMapping.map('includes') { getIncludes(project, cloverPluginConvention) }
@@ -322,11 +322,13 @@ class CloverPlugin implements Plugin<Project> {
      * @param cloverPluginConvention Clover plugin convention
      * @return Test source directories
      */
-    private Set<File> getTestSourceDirectories(Project project, CloverPluginConvention cloverPluginConvention, Test testTask) {
+    private Set<File> getTestSourceDirectories(Project project, CloverPluginConvention cloverPluginConvention) {
         def testSrcDirs = [] as Set<File>
 
         //default test task
-        if (testTask.testSrcDirs as Set<File> == project.sourceSets.test.java.srcDirs) {
+        if (cloverPluginConvention.testSrcDirs) {
+            addExistingSourceDirectories(testSrcDirs, cloverPluginConvention.testSrcDirs as Set)
+        } else {
             if(hasGroovyPlugin(project)) {
                 addExistingSourceDirectories(testSrcDirs, project.sourceSets.test.java.srcDirs)
                 addExistingSourceDirectories(testSrcDirs, project.sourceSets.test.groovy.srcDirs)
@@ -334,12 +336,6 @@ class CloverPlugin implements Plugin<Project> {
             else if(hasJavaPlugin(project)) {
                 addExistingSourceDirectories(testSrcDirs, project.sourceSets.test.java.srcDirs)
             }
-        } else {
-            addExistingSourceDirectories(testSrcDirs, testTask.testSrcDirs as Set)
-        }
-
-        if(cloverPluginConvention.additionalTestDirs) {
-            addExistingSourceDirectories(testSrcDirs, cloverPluginConvention.additionalTestDirs)
         }
 
         testSrcDirs

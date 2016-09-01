@@ -32,7 +32,7 @@ class CloverPluginConvention {
     boolean optimizeTests
     String snapshotFile
     Set<File> additionalSourceDirs
-    Set<File> additionalTestDirs
+    Set<File> testSrcDirs
     List<String> includes
     List<String> excludes
     List<String> testIncludes
